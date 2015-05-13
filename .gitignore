@@ -1,0 +1,23 @@
+# Linux
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# MacOS
+.DS_Store
+._*
+
+# Log files
+*.log
+
+# Node modules directory
+node_modules
+
+# Special git files
+!.gitattributes
+!.gitignore
+!.gitkeep
