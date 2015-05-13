@@ -5,5 +5,11 @@
   "author": "Matthew Lawrence-Stubley <matt@tjs.co.uk>",
   "main": "src/index.js",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "gulp": "^3.8.11"
+  },
+  "peerDependencies": {
+    "gulp": "~3.8.0"
+  }
 }
