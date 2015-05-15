@@ -8,6 +8,7 @@
   "private": true,
   "dependencies": {
     "extend": "^2.0.1",
+    "glob": "^5.0.6",
     "gulp-watch": "^4.2.4"
   },
   "devDependencies": {

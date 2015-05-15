@@ -1,12 +1,17 @@
 'use strict';
 
 // Include dependencies
-var gulp = require('gulp');
-var extend = require('extend');
-var watch = require('gulp-watch');
-
-var batch = require('./batch');
-var runner = require('./runner');
+var lib = {
+	extend: require('extend'),
+	glob: require('glob'),
+	gulp: require('gulp'),
+	path: require('path'),
+	watch: require('gulp-watch'),
+	batch: require('./batch'),
+	config: require('./config'),
+	runner: require('./runner'),
+	load: require('./load'),
+};
 
 
 // Private API
@@ -37,10 +42,19 @@ function Gelf(gulp) {
 
 	this.gulp = gulp;
 
+	this._config = {};
+	this._configFn = {};
+
+	this.config('global', {
+		src:  'src',
+		dest: 'web',
+	});
+
 }
 
+
 // Gelf prototype.
-extend(Gelf.prototype, {
+lib.extend(Gelf.prototype, {
 
 	Gelf: Gelf,
 
@@ -51,7 +65,7 @@ extend(Gelf.prototype, {
 	task: function(name, deps, cb) {
 
 		if (deps || cb) {
-			batch(gulp, name);
+			lib.batch(this.gulp, name);
 		}
 
 		return this.gulp.task.apply(this.gulp, Array.prototype.slice.call(arguments, 0));
@@ -70,7 +84,7 @@ extend(Gelf.prototype, {
 			interval:    100,
 		};
 
-		return watch('src/**/*.*', options, runner(gulp, tasks));
+		return lib.watch('src/**/*.*', options, lib.runner(this.gulp, tasks));
 
 	},
 
@@ -96,9 +110,7 @@ extend(Gelf.prototype, {
 	/**
 	 * Configure a Gelf task.
 	 */
-	config: function(name, config) {
-
-	},
+	config: lib.config,
 
 
 	/**
@@ -106,9 +118,34 @@ extend(Gelf.prototype, {
 	 */
 	load: function(target) {
 
+		var load = this.load.bind(this);
+
+		// Load tasks from an array
+		if (Array.isArray(target)) {
+			return target.forEach(load);
+		}
+
+		// Load tasks from a string
+		if (typeof target === 'string') {
+
+			// String is a glob pattern
+			if (lib.glob.hasMagic(target)) {
+				return lib.glob.sync(target).forEach(load);
+			}
+
+			// String is a path
+			target = require(
+				lib.path.normalize(process.cwd() + '/' + target)
+			);
+
+		}
+
+		// Load tasks from an object
+		lib.load(this, target);
+
 	}
 
 });
 
 // Export an instance of Gelf
-module.exports = new Gelf(gulp);
+module.exports = new Gelf(lib.gulp);
