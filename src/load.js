@@ -1,5 +1,12 @@
 'use strict';
 
+// Include dependencies
+var lib = {
+	glob: require('glob'),
+	path: require('path'),
+};
+
+
 // Constants
 // ---------------------------------------------------------
 
@@ -114,4 +121,34 @@ function loadTaskModule(gelf, mod) {
 // Public API
 // ---------------------------------------------------------
 
-module.exports = loadTaskModule;
+/**
+ * Load Gelf tasks from a file, directory, or object.
+ */
+module.exports = function load(target) {
+
+	var gelf = this;
+
+	// Load tasks from an array
+	if (Array.isArray(target)) {
+		return target.forEach(load.bind(gelf));
+	}
+
+	// Load tasks from a string
+	if (typeof target === 'string') {
+
+		// String is a glob pattern
+		if (lib.glob.hasMagic(target)) {
+			return lib.glob.sync(target).forEach(load.bind(gelf));
+		}
+
+		// String is a path
+		target = require(
+			lib.path.normalize(process.cwd() + '/' + target)
+		);
+
+	}
+
+	// Load tasks from an object
+	loadTaskModule(gelf, target);
+
+};

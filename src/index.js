@@ -3,14 +3,10 @@
 // Include dependencies
 var lib = {
 	extend: require('extend'),
-	glob: require('glob'),
 	gulp: require('gulp'),
-	path: require('path'),
 	watch: require('gulp-watch'),
 	batch: require('./batch'),
-	config: require('./config'),
 	runner: require('./runner'),
-	load: require('./load'),
 };
 
 
@@ -42,9 +38,6 @@ function Gelf(gulp) {
 
 	this.gulp = gulp;
 
-	this._config = {};
-	this._configFn = {};
-
 	this.config('global', {
 		src:  'src',
 		dest: 'web',
@@ -53,7 +46,7 @@ function Gelf(gulp) {
 }
 
 
-// Gelf prototype.
+// Gelf prototype
 lib.extend(Gelf.prototype, {
 
 	Gelf: Gelf,
@@ -110,42 +103,16 @@ lib.extend(Gelf.prototype, {
 	/**
 	 * Configure a Gelf task.
 	 */
-	config: lib.config,
+	config: require('./config'),
 
 
 	/**
 	 * Load Gelf tasks from a file, directory, or object.
 	 */
-	load: function(target) {
-
-		var load = this.load.bind(this);
-
-		// Load tasks from an array
-		if (Array.isArray(target)) {
-			return target.forEach(load);
-		}
-
-		// Load tasks from a string
-		if (typeof target === 'string') {
-
-			// String is a glob pattern
-			if (lib.glob.hasMagic(target)) {
-				return lib.glob.sync(target).forEach(load);
-			}
-
-			// String is a path
-			target = require(
-				lib.path.normalize(process.cwd() + '/' + target)
-			);
-
-		}
-
-		// Load tasks from an object
-		lib.load(this, target);
-
-	}
+	load: require('./load'),
 
 });
+
 
 // Export an instance of Gelf
 module.exports = new Gelf(lib.gulp);

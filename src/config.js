@@ -76,18 +76,32 @@ module.exports = function(name, config, reset) {
 
 	var gelf = this;
 
+	// Prepare Gelf instance
+	if (gelf._config == null) {
+		gelf._config = {};
+		gelf._configFn = {};
+	}
+
+	// Signature: config()
+	//   Get all config
 	if (arguments.length === 0) {
 		return getAllConfig(gelf);
 	}
 
+	// Signature: config(name)
+	//   Get config for the named module
 	if (arguments.length === 1) {
 		return getConfig(gelf, name);
 	}
 
+	// Signature: config(name, fn)
+	//   Set the configuration function for a named module
 	if (typeof config === 'function') {
 		setConfigFunction(gelf, name, config);
 	}
 
+	// Signature: config(name, hash, reset)
+	//   Set configuration data for a named module
 	setConfig(gelf, name, config, reset);
 
 };
