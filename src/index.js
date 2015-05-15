@@ -4,6 +4,7 @@
 var gulp = require('gulp');
 var watch = require('gulp-watch');
 
+var batch = require('./batch');
 var runner = require('./runner');
 
 
@@ -19,7 +20,15 @@ module.exports = {
 	/**
 	 * Define a task.
 	 */
-	task: gulp.task.bind(gulp),
+	task: function(name, deps, cb) {
+
+		if (deps || cb) {
+			batch(name);
+		}
+
+		return gulp.task.apply(gulp, Array.prototype.slice.call(arguments, 0));
+
+	},
 
 
 	/**
