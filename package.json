@@ -6,6 +6,9 @@
   "main": "src/index.js",
   "license": "MIT",
   "private": true,
+  "dependencies": {
+    "gulp-watch": "^4.2.4"
+  },
   "devDependencies": {
     "gulp": "^3.8.11"
   },
