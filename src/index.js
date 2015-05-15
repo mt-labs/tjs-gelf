@@ -2,6 +2,7 @@
 
 // Include dependencies
 var gulp = require('gulp');
+var extend = require('extend');
 var watch = require('gulp-watch');
 
 var batch = require('./batch');
@@ -11,11 +12,38 @@ var runner = require('./runner');
 // Private API
 // ---------------------------------------------------------
 
+/**
+ * Return a function that re-directs the call to the Gulp instance.
+ */
+function gulpCall(name) {
+
+	return function() {
+
+		var fn = this.gulp[name];
+		return fn.apply(this.gulp, Array.prototype.slice.call(arguments, 0));
+
+	};
+
+}
+
 
 // Public API
 // ---------------------------------------------------------
 
-module.exports = {
+/**
+ * Gelf constructor.
+ */
+function Gelf(gulp) {
+
+	this.gulp = gulp;
+
+}
+
+// Gelf prototype.
+extend(Gelf.prototype, {
+
+	Gelf: Gelf,
+
 
 	/**
 	 * Define a task.
@@ -23,10 +51,10 @@ module.exports = {
 	task: function(name, deps, cb) {
 
 		if (deps || cb) {
-			batch(name);
+			batch(gulp, name);
 		}
 
-		return gulp.task.apply(gulp, Array.prototype.slice.call(arguments, 0));
+		return this.gulp.task.apply(this.gulp, Array.prototype.slice.call(arguments, 0));
 
 	},
 
@@ -42,7 +70,7 @@ module.exports = {
 			interval:    100,
 		};
 
-		return watch('src/**/*.*', options, runner(tasks));
+		return watch('src/**/*.*', options, runner(gulp, tasks));
 
 	},
 
@@ -50,19 +78,19 @@ module.exports = {
 	/**
 	 * Emit files matching provided glob or an array of globs.
 	 */
-	src: gulp.src.bind(gulp),
+	src: gulpCall('src'),
 
 
 	/**
 	 * Write a file or files to a destination.
 	 */
-	dest: gulp.dest.bind(gulp),
+	dest: gulpCall('dest'),
 
 
 	/**
 	 * Start a task.
 	 */
-	start: gulp.start.bind(gulp),
+	start: gulpCall('start'),
 
 
 	/**
@@ -78,9 +106,9 @@ module.exports = {
 	 */
 	load: function(target) {
 
-	},
+	}
 
+});
 
-	getTaskRunner: runner
-
-};
+// Export an instance of Gelf
+module.exports = new Gelf(gulp);

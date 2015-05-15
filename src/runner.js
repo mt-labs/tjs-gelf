@@ -1,9 +1,5 @@
 'use strict';
 
-// Include dependencies
-var gulp = require('gulp');
-
-
 // Private API
 // ---------------------------------------------------------
 
@@ -45,7 +41,7 @@ function getDebounced(fn, delay) {
 /**
  * Get a runner for a function task.
  */
-function getFunctionTaskRunner(fn) {
+function getFunctionTaskRunner(gulp, fn) {
 
 	return getDebounced(fn);
 
@@ -55,7 +51,7 @@ function getFunctionTaskRunner(fn) {
 /**
  * Get a runner for a named Gulp task.
  */
-function getNamedTaskRunner(task) {
+function getNamedTaskRunner(gulp, task) {
 
 	var isRunning = false;
 	var runAgain = false;
@@ -79,14 +75,14 @@ function getNamedTaskRunner(task) {
 
 	var runDebounced = getDebounced(run);
 
-	return function(debounce) {
+	return function() {
 
 		if (isRunning) {
 			runAgain = true;
 			return;
 		}
 
-		runDebounced(debounce);
+		runDebounced();
 
 	};
 
@@ -96,13 +92,13 @@ function getNamedTaskRunner(task) {
 /**
  * Get a runner for an array of tasks.
  */
-function getArrayTaskRunner(tasks) {
+function getArrayTaskRunner(gulp, tasks) {
 
-	tasks = tasks.map(getTaskRunner);
+	tasks = tasks.map(getTaskRunner.bind(null, gulp));
 
-	return function(debounce) {
+	return function() {
 		for (var i = 0, ix = tasks.length; i < ix; i++) {
-			tasks[i](debounce);
+			tasks[i]();
 		}
 	};
 
@@ -112,18 +108,18 @@ function getArrayTaskRunner(tasks) {
 /**
  * Get a runner for an arbitary task.
  */
-function getTaskRunner(task) {
+function getTaskRunner(gulp, task) {
 
 	if (Array.isArray(task)) {
-		return getArrayTaskRunner(task);
+		return getArrayTaskRunner(gulp, task);
 	}
 
 	if (typeof task === 'function') {
-		return getFunctionTaskRunner(task);
+		return getFunctionTaskRunner(gulp, task);
 	}
 
 	if (typeof task === 'string') {
-		return getNamedTaskRunner(task);
+		return getNamedTaskRunner(gulp, task);
 	}
 
 	throw new Error(

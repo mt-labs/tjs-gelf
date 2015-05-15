@@ -1,9 +1,5 @@
 'use strict';
 
-// Include dependencies
-var gulp = require('gulp');
-
-
 // Constants
 // ---------------------------------------------------------
 
@@ -16,7 +12,7 @@ var DELIMITER = ':';
 /**
  * Add a batch task.
  */
-function addBatchTask(name) {
+function addBatchTask(gulp, name) {
 
 	var batchName = name.split(DELIMITER).slice(0, -1).join(DELIMITER);
 	if (!batchName) {
