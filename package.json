@@ -9,7 +9,8 @@
   "dependencies": {
     "extend": "^2.0.1",
     "glob": "^5.0.6",
-    "gulp-watch": "^4.2.4"
+    "gulp-watch": "^4.2.4",
+    "minimist": "^1.1.1"
   },
   "devDependencies": {
     "gulp": "^3.8.11"

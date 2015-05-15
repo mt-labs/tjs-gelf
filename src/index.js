@@ -38,9 +38,21 @@ function Gelf(gulp) {
 
 	this.gulp = gulp;
 
-	this.config('global', {
-		src:  'src',
-		dest: 'web',
+	this.config('global', function(_, argv) {
+		return {
+
+			env:   argv.env || 'dev',
+
+			src:   'src',
+			dest:  'web',
+
+			watch: {
+				read:        false,
+				usePolling:  !!argv.poll,
+				interval:    (typeof argv.poll === 'number') ? argv.poll : 200,
+			}
+
+		};
 	});
 
 }
@@ -71,13 +83,7 @@ lib.extend(Gelf.prototype, {
 	 */
 	watch: function(glob, tasks) {
 
-		var options = {
-			read:        false,
-			usePolling:  true,
-			interval:    100,
-		};
-
-		return lib.watch('src/**/*.*', options, lib.runner(this.gulp, tasks));
+		return lib.watch('src/**/*.*', this.config('global').watch, lib.runner(this.gulp, tasks));
 
 	},
 

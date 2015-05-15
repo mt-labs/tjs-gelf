@@ -1,7 +1,11 @@
 'use strict';
 
 // Include dependencies
-var extend = require('extend');
+var lib = {
+	extend: require('extend'),
+};
+
+var argv = require('minimist')(process.argv.slice(2));
 
 
 // Private API
@@ -15,12 +19,13 @@ function getConfig(gelf, name) {
 
 	var fn = gelf._configFn[name];
 
-	return extend(true,
-		fn ? fn((name !== 'global') ? getConfig(gelf, 'global') : {}) : {},
+	return lib.extend(true,
+		fn ? fn((name !== 'global') ? getConfig(gelf, 'global') : {}, argv) : {},
 		gelf._config[name] || {}
 	);
 
 }
+
 
 /**
  * Get all configuration hashes.
@@ -61,7 +66,7 @@ function setConfig(gelf, name, config, reset) {
 
 	gelf._config[name] = (reset || typeof config !== 'object') ?
 		config :
-		extend(true, gelf._config[name] || {}, config || {});
+		lib.extend(true, gelf._config[name] || {}, config || {});
 
 }
 
