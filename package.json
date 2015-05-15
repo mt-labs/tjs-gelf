@@ -1,9 +1,20 @@
 {
   "name": "tjs-gelf",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "TJS Gulp helper.",
   "author": "Matthew Lawrence-Stubley <matt@tjs.co.uk>",
   "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mt-labs/tjs-gelf"
+  },
+  "bugs": {
+    "url": "https://github.com/mt-labs/tjs-gelf/issues"
+  },
+  "keywords": [
+    "gulp",
+    "tjs"
+  ],
   "license": "MIT",
   "private": true,
   "dependencies": {
