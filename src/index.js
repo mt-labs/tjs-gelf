@@ -83,7 +83,7 @@ lib.extend(Gelf.prototype, {
 	 */
 	watch: function(glob, tasks) {
 
-		return lib.watch('src/**/*.*', this.config('global').watch, lib.runner(this.gulp, tasks));
+		return lib.watch(glob, this.config('global').watch, lib.runner(this.gulp, tasks));
 
 	},
 
