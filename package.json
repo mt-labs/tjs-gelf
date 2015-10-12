@@ -27,6 +27,6 @@
     "gulp": "^3.8.11"
   },
   "peerDependencies": {
-    "gulp": "~3.8.0"
+    "gulp": "^3.8.0"
   }
 }
