@@ -53,38 +53,11 @@ function getFunctionTaskRunner(gulp, fn) {
  */
 function getNamedTaskRunner(gulp, task) {
 
-	var isRunning = false;
-	var runAgain = false;
+	return getDebounced(function() {
 
-	var run = function run() {
+		gulp.start(task);
 
-		isRunning = true;
-
-		gulp.start(task, function() {
-
-			isRunning = false;
-
-			if (runAgain) {
-				runAgain = false;
-				run();
-			}
-
-		});
-
-	};
-
-	var runDebounced = getDebounced(run);
-
-	return function() {
-
-		if (isRunning) {
-			runAgain = true;
-			return;
-		}
-
-		runDebounced();
-
-	};
+	});
 
 }
 
