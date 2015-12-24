@@ -5,56 +5,38 @@ var lib = {
 	extend: require('extend'),
 };
 
-var argv = require('minimist')(process.argv.slice(2));
+// var argv = require('minimist')(process.argv.slice(2));
 
 
 // Private API
 // ---------------------------------------------------------
 
-
 /**
- * Get a named configuration hash.
+ * Get a named configuration objects.
  */
 function getConfig(gelf, name) {
 
-	var fn = gelf._configFn[name];
+	var initial = (name !== 'global')
+		? getConfig(gelf, 'global')
+		: {};
 
-	return lib.extend(true,
-		fn ? fn((name !== 'global') ? getConfig(gelf, 'global') : {}, argv) : {},
-		gelf._config[name] || {}
-	);
+	return (gelf._config[name] || []).reduce(function(config, current) {
+
+		return (typeof current === 'function') ?
+			current.call(null, config, lib.extend) || config :
+			lib.extend(true, config, current);
+
+	}, initial);
 
 }
 
 
 /**
- * Get all configuration hashes.
+ * Get all configuration objects.
  */
 function getAllConfig(gelf) {
 
-	var out = {};
-
-	[gelf._config, gelf._configFn].forEach(function(config) {
-
-		for (var name in config) {
-			if (out[name] == null) {
-				out[name] = getConfig(gelf, name);
-			}
-		}
-
-	});
-
-	return out;
-
-}
-
-
-/**
- * Set the configuration provider for a named module.
- */
-function setConfigFunction(gelf, name, fn) {
-
-	gelf._configFn[name] = fn;
+	return Object.keys(gelf).map(getConfig.bind(null, gelf));
 
 }
 
@@ -62,11 +44,13 @@ function setConfigFunction(gelf, name, fn) {
 /**
  * Set configuration for a named module.
  */
-function setConfig(gelf, name, config, reset) {
+function setConfig(gelf, name, config) {
 
-	gelf._config[name] = (reset || typeof config !== 'object') ?
-		config :
-		lib.extend(true, gelf._config[name] || {}, config || {});
+	if (gelf._config[name] == null) {
+		gelf._config[name] = [];
+	}
+
+	gelf._config[name].push(config);
 
 }
 
@@ -77,14 +61,13 @@ function setConfig(gelf, name, config, reset) {
 /**
  * Get or set configuration.
  */
-module.exports = function(name, config, reset) {
+module.exports = function(name, config) {
 
 	var gelf = this;
 
 	// Prepare Gelf instance
 	if (gelf._config == null) {
 		gelf._config = {};
-		gelf._configFn = {};
 	}
 
 	// Signature: config()
@@ -99,14 +82,8 @@ module.exports = function(name, config, reset) {
 		return getConfig(gelf, name);
 	}
 
-	// Signature: config(name, fn)
-	//   Set the configuration function for a named module
-	if (typeof config === 'function') {
-		setConfigFunction(gelf, name, config);
-	}
-
-	// Signature: config(name, hash, reset)
+	// Signature: config(name, config)
 	//   Set configuration data for a named module
-	setConfig(gelf, name, config, reset);
+	setConfig(gelf, name, config);
 
 };
