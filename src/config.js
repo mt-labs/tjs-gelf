@@ -38,7 +38,7 @@ function recursiveMap(value, callback) {
 /**
  * Parse CLI arguments into an object.
  */
-function parseArgs() {
+function loadArgsConfig() {
 
 	var out = {};
 	var argv = require('minimist')(process.argv.slice(2));
@@ -75,23 +75,23 @@ function parseArgs() {
 
 
 /**
- * Get CLI arguments for the named configuration.
+ * Get CLI configuration.
  */
-function getArgs(name) {
+function getArgsConfig(name) {
 
-	if (getArgs.parsed == null) {
-		getArgs.parsed = parseArgs();
+	if (getArgsConfig._config == null) {
+		getArgsConfig._config = loadArgsConfig();
 	}
 
-	// Signature: getArgs()
+	// Signature: getArgsConfig()
 	//   Get all args
 	if (arguments.length === 0) {
 		return getAllConfig(gelf);
 	}
 
-	// Signature: getArgs(name)
+	// Signature: getArgsConfig(name)
 	//   Get args for the named config
-	return getArgs.parsed[name] || {};
+	return getArgsConfig._config[name] || {};
 
 }
 
@@ -173,7 +173,7 @@ function getSystemConfig(name) {
 
 
 /**
- * Get a named configuration objects.
+ * Get configuration for a named module.
  */
 function getConfig(gelf, name) {
 
@@ -183,7 +183,7 @@ function getConfig(gelf, name) {
 
 	var configurators = (gelf._config[name] || []).concat([
 		getSystemConfig(name),
-		getArgs(name),
+		getArgsConfig(name),
 	]);
 
 	return configurators.reduce(function(config, current) {
@@ -204,7 +204,7 @@ function getConfig(gelf, name) {
 
 
 /**
- * Get all configuration objects.
+ * Get configuration for all modules.
  */
 function getAllConfig(gelf) {
 
