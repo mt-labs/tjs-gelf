@@ -3,6 +3,8 @@
 // Include dependencies
 var lib = {
 	extend: require('extend'),
+	fs: require('fs'),
+	path: require('path'),
 };
 
 
@@ -95,6 +97,82 @@ function getArgs(name) {
 
 
 /**
+ * Load system configuration from ".tjs-gelf" files.
+ */
+function loadSystemConfig() {
+
+	var fileName = '.tjs-gelf';
+
+	var paths = [];
+
+	// Add current and all parent directories to the search list
+	var lastDir, currentDir = process.cwd();
+	while (currentDir !== lastDir) {
+		paths.push(lib.path.normalize(currentDir + '/' + fileName));
+		lastDir = currentDir;
+		currentDir = lib.path.dirname(currentDir);
+	}
+
+	// Add home directory to the search list
+	var homeDir = require('user-home');
+	if (homeDir) {
+		paths.push(lib.path.normalize(homeDir + '/' + fileName));
+	}
+
+	var config = {};
+
+	paths.forEach(function(path) {
+
+		var fileContent;
+
+		// Try to read the file
+		try {
+			fileContent = lib.fs.readFileSync(path, 'utf8');
+		}
+		catch (error) {
+			// Ignore errors
+		}
+
+		// Try to parse the file
+		try {
+			if (fileContent) {
+				config = lib.extend(true, JSON.parse(fileContent), config);
+			}
+		}
+		catch (error) {
+			console.warn('Error parsing file at "%s": %s', path, error.stack);
+		}
+
+	});
+
+	return config;
+
+}
+
+
+/**
+ * Get system configuration.
+ */
+function getSystemConfig(name) {
+
+	if (getSystemConfig._config == null) {
+		getSystemConfig._config = loadSystemConfig();
+	}
+
+	// Signature: getSystemConfig()
+	//   Get all config
+	if (arguments.length === 0) {
+		return getAllConfig(gelf);
+	}
+
+	// Signature: getSystemConfig(name)
+	//   Get config for the named module
+	return getSystemConfig._config[name] || {};
+
+}
+
+
+/**
  * Get a named configuration objects.
  */
 function getConfig(gelf, name) {
@@ -103,7 +181,10 @@ function getConfig(gelf, name) {
 		? getConfig(gelf, 'global')
 		: {};
 
-	var configurators = (gelf._config[name] || []).concat([getArgs(name)]);
+	var configurators = (gelf._config[name] || []).concat([
+		getSystemConfig(name),
+		getArgs(name),
+	]);
 
 	return configurators.reduce(function(config, current) {
 
