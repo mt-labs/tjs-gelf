@@ -22,9 +22,15 @@ function getConfig(gelf, name) {
 
 	return (gelf._config[name] || []).reduce(function(config, current) {
 
-		return (typeof current === 'function') ?
-			current.call(null, config, lib.extend) || config :
-			lib.extend(true, config, current);
+		if (current == null) {
+			return {};
+		}
+
+		if (typeof current === 'function') {
+			return current.call(null, config, lib.extend) || config;
+		}
+
+		return lib.extend(true, config, current);
 
 	}, initial);
 
