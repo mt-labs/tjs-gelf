@@ -208,7 +208,13 @@ function getConfig(gelf, name) {
  */
 function getAllConfig(gelf) {
 
-	return Object.keys(gelf).map(getConfig.bind(null, gelf));
+	var out = {};
+
+	Object.keys(gelf._config).map(function(name) {
+		out[name] = getConfig(gelf, name);
+	});
+
+	return out;
 
 }
 
