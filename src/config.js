@@ -86,12 +86,12 @@ function getArgsConfig(name) {
 	// Signature: getArgsConfig()
 	//   Get all args
 	if (arguments.length === 0) {
-		return getAllConfig(gelf);
+		return getArgsConfig._config;
 	}
 
 	// Signature: getArgsConfig(name)
 	//   Get args for the named config
-	return getArgsConfig._config[name] || {};
+	return getArgsConfig._config[name] || null;
 
 }
 
@@ -162,12 +162,12 @@ function getSystemConfig(name) {
 	// Signature: getSystemConfig()
 	//   Get all config
 	if (arguments.length === 0) {
-		return getAllConfig(gelf);
+		return getSystemConfig._config;
 	}
 
 	// Signature: getSystemConfig(name)
 	//   Get config for the named module
-	return getSystemConfig._config[name] || {};
+	return getSystemConfig._config[name] || null;
 
 }
 
@@ -177,10 +177,6 @@ function getSystemConfig(name) {
  */
 function getConfig(gelf, name) {
 
-	var initial = (name !== 'global')
-		? getConfig(gelf, 'global')
-		: {};
-
 	var configurators = (gelf._config[name] || []).concat([
 		getSystemConfig(name),
 		getArgsConfig(name),
@@ -189,16 +185,21 @@ function getConfig(gelf, name) {
 	return configurators.reduce(function(config, current) {
 
 		if (current == null) {
-			return {};
+			return config;
 		}
 
 		if (typeof current === 'function') {
-			return current.call(null, config, lib.extend) || config;
+			let result = current.call(null, config);
+			return (result != null) ? result : config;
 		}
 
-		return lib.extend(true, config, current);
+		if (typeof current === 'object') {
+			return (typeof config === 'object') ? lib.extend(true, config, current) : current;
+		}
 
-	}, initial);
+		return current;
+
+	}, null);
 
 }
 
