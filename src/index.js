@@ -38,20 +38,16 @@ function Gelf(gulp) {
 
 	this.gulp = gulp;
 
-	this.config('global', function(_, argv) {
+	this.config('env', 'dev');
+
+	this.config('poll', false);
+
+	this.config('watch', function(config, get) {
+		var poll = get('poll');
 		return {
-
-			env:   argv.env || 'dev',
-
-			src:   'src',
-			dest:  'web',
-
-			watch: {
-				read:        false,
-				usePolling:  !!argv.poll,
-				interval:    (typeof argv.poll === 'number') ? argv.poll : 200,
-			}
-
+			read:        false,
+			usePolling:  !!poll,
+			interval:    (typeof poll === 'number') ? poll : 200,
 		};
 	});
 

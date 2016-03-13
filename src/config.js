@@ -182,6 +182,8 @@ function getConfig(gelf, name) {
 		getArgsConfig(name),
 	]);
 
+	var get = getConfig.bind(null, gelf);
+
 	return configurators.reduce(function(config, current) {
 
 		if (current == null) {
@@ -189,7 +191,7 @@ function getConfig(gelf, name) {
 		}
 
 		if (typeof current === 'function') {
-			let result = current.call(null, config);
+			let result = current.call(null, config, get);
 			return (result != null) ? result : config;
 		}
 
