@@ -23,6 +23,17 @@ function configureDefaults(gelf) {
 
 
 /**
+ * Load default tasks.
+ */
+function loadDefaultTasks(gelf) {
+
+	gelf.load(require('../tasks/dump-config'));
+	gelf.load(require('../tasks/dump-tasks'));
+
+}
+
+
+/**
  * Gelf constructor.
  */
 function Gelf(gulp) {
@@ -53,6 +64,9 @@ function Gelf(gulp) {
 
 	// Add default config
 	configureDefaults(this);
+
+	// Load default tasks
+	loadDefaultTasks(this);
 
 }
 
