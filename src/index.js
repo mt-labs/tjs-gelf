@@ -23,6 +23,7 @@ function configureDefaults(gelf) {
 			read:        false,
 			usePolling:  !!poll,
 			interval:    (typeof poll === 'number') ? poll : 200,
+			debounce:    200,
 		};
 	});
 
@@ -46,6 +47,9 @@ function Gelf(gulp) {
 	// Bind task method
 	this.task = require('./task').bind(this);
 
+	// Bind watch method
+	this.watch = require('./watch').bind(this);
+
 	// Bind Gulp methods
 	this.dest = gulp.dest.bind(gulp);
 	this.on = gulp.on.bind(gulp);
@@ -64,11 +68,11 @@ lib.extend(Gelf.prototype, {
 	/**
 	 * Watch files and directories for changes.
 	 */
-	watch: function(glob, tasks) {
+	// watch: function(glob, tasks) {
 
-		return lib.watch(glob, this.config('global').watch, lib.runner(this.gulp, tasks));
+	// 	return lib.watch(glob, this.config('global').watch, lib.runner(this.gulp, tasks));
 
-	},
+	// },
 
 
 	/**
