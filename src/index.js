@@ -3,48 +3,22 @@
 // Include dependencies
 var lib = {
 	extend: require('extend'),
-	gulp: require('gulp'),
 	watch: require('gulp-watch'),
 	batch: require('./batch'),
 	runner: require('./runner'),
 };
 
 
-// Private API
-// ---------------------------------------------------------
-
 /**
- * Return a function that re-directs the call to the Gulp instance.
+ * Add default config to a Gelf instance.
  */
-function gulpCall(name) {
+function configureDefaults(gelf) {
 
-	return function() {
+	gelf.config('env', 'dev');
 
-		var fn = this.gulp[name];
-		return fn.apply(this.gulp, Array.prototype.slice.call(arguments, 0));
+	gelf.config('poll', false);
 
-	};
-
-}
-
-
-// Public API
-// ---------------------------------------------------------
-
-/**
- * Gelf constructor.
- */
-function Gelf(gulp) {
-
-	this.gulp = gulp;
-
-	this.config = require('./config').bind(this);
-
-	this.config('env', 'dev');
-
-	this.config('poll', false);
-
-	this.config('watch', function(config, get) {
+	gelf.config('watch', function(config, get) {
 		var poll = get('poll');
 		return {
 			read:        false,
@@ -56,11 +30,34 @@ function Gelf(gulp) {
 }
 
 
+/**
+ * Gelf constructor.
+ */
+function Gelf(gulp) {
+
+	// Expose the Gelf constructor
+	this.Gelf = Gelf;
+
+	// Expose the Gulp instance
+	this.gulp = gulp;
+
+	// Bind config method
+	this.config = require('./config').bind(this);
+
+	// Bind Gulp methods
+	this.dest = gulp.dest.bind(gulp);
+	this.on = gulp.on.bind(gulp);
+	this.src = gulp.src.bind(gulp);
+	this.start = gulp.start.bind(gulp);
+
+	// Add default config
+	configureDefaults(this);
+
+}
+
+
 // Gelf prototype
 lib.extend(Gelf.prototype, {
-
-	Gelf: Gelf,
-
 
 	/**
 	 * Define a task.
@@ -87,24 +84,6 @@ lib.extend(Gelf.prototype, {
 
 
 	/**
-	 * Emit files matching provided glob or an array of globs.
-	 */
-	src: gulpCall('src'),
-
-
-	/**
-	 * Write a file or files to a destination.
-	 */
-	dest: gulpCall('dest'),
-
-
-	/**
-	 * Start a task.
-	 */
-	start: gulpCall('start'),
-
-
-	/**
 	 * Load Gelf tasks from a file, directory, or object.
 	 */
 	load: require('./load'),
@@ -113,4 +92,4 @@ lib.extend(Gelf.prototype, {
 
 
 // Export an instance of Gelf
-module.exports = new Gelf(lib.gulp);
+module.exports = new Gelf(require('gulp'));
