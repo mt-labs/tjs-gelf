@@ -4,7 +4,6 @@
 var lib = {
 	extend: require('extend'),
 	watch: require('gulp-watch'),
-	batch: require('./batch'),
 	runner: require('./runner'),
 };
 
@@ -44,6 +43,9 @@ function Gelf(gulp) {
 	// Bind config method
 	this.config = require('./config').bind(this);
 
+	// Bind task method
+	this.task = require('./task').bind(this);
+
 	// Bind Gulp methods
 	this.dest = gulp.dest.bind(gulp);
 	this.on = gulp.on.bind(gulp);
@@ -58,20 +60,6 @@ function Gelf(gulp) {
 
 // Gelf prototype
 lib.extend(Gelf.prototype, {
-
-	/**
-	 * Define a task.
-	 */
-	task: function(name, deps, cb) {
-
-		if (deps || cb) {
-			lib.batch(this.gulp, name);
-		}
-
-		return this.gulp.task.apply(this.gulp, Array.prototype.slice.call(arguments, 0));
-
-	},
-
 
 	/**
 	 * Watch files and directories for changes.
