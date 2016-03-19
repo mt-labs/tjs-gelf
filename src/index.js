@@ -1,11 +1,5 @@
 'use strict';
 
-// Include dependencies
-var lib = {
-	extend: require('extend'),
-};
-
-
 /**
  * Add default config to a Gelf instance.
  */
@@ -48,6 +42,9 @@ function Gelf(gulp) {
 	// Bind watch method
 	this.watch = require('./watch').bind(this);
 
+	// Bind load method
+	this.load = require('./load').bind(this);
+
 	// Bind Gulp methods
 	this.dest = gulp.dest.bind(gulp);
 	this.on = gulp.on.bind(gulp);
@@ -58,27 +55,6 @@ function Gelf(gulp) {
 	configureDefaults(this);
 
 }
-
-
-// Gelf prototype
-lib.extend(Gelf.prototype, {
-
-	/**
-	 * Watch files and directories for changes.
-	 */
-	// watch: function(glob, tasks) {
-
-	// 	return lib.watch(glob, this.config('global').watch, lib.runner(this.gulp, tasks));
-
-	// },
-
-
-	/**
-	 * Load Gelf tasks from a file, directory, or object.
-	 */
-	load: require('./load'),
-
-});
 
 
 // Export an instance of Gelf
