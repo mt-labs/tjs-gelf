@@ -3,8 +3,6 @@
 // Include dependencies
 var lib = {
 	extend: require('extend'),
-	watch: require('gulp-watch'),
-	runner: require('./runner'),
 };
 
 
