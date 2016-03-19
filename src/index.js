@@ -38,6 +38,8 @@ function Gelf(gulp) {
 
 	this.gulp = gulp;
 
+	this.config = require('./config').bind(this);
+
 	this.config('env', 'dev');
 
 	this.config('poll', false);
@@ -100,12 +102,6 @@ lib.extend(Gelf.prototype, {
 	 * Start a task.
 	 */
 	start: gulpCall('start'),
-
-
-	/**
-	 * Configure a Gelf task.
-	 */
-	config: require('./config'),
 
 
 	/**
