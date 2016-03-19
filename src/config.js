@@ -88,7 +88,7 @@ function bind(gelf) {
 		// Signature: config(name)
 		//   Get config for the named module
 		if (arguments.length === 1) {
-			return getByName(name);
+			return getConfig(name);
 		}
 
 		// Signature: config(name, config)
