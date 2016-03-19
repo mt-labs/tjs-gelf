@@ -20,8 +20,6 @@ function bind(gelf) {
 			require('./config/from-args')(name),
 		]);
 
-		var get = getConfig.bind(null, gelf);
-
 		return configurators.reduce(function(config, current) {
 
 			if (current == null) {
@@ -29,7 +27,7 @@ function bind(gelf) {
 			}
 
 			if (typeof current === 'function') {
-				let result = current.call(null, config, get);
+				let result = current.call(null, config, getConfig);
 				return (result != null) ? result : config;
 			}
 
