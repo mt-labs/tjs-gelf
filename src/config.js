@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * Get a config module bound to the given Gelf instance.
+ */
 function bind(gelf) {
 
 	var allConfig = {};
@@ -13,8 +16,8 @@ function bind(gelf) {
 		var extend = require('extend');
 
 		var configurators = (allConfig[name] || []).concat([
-			require('./from-system')(name),
-			require('./from-args')(name),
+			require('./config/from-system')(name),
+			require('./config/from-args')(name),
 		]);
 
 		var get = getConfig.bind(null, gelf);
