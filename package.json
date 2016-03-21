@@ -1,6 +1,6 @@
 {
   "name": "tjs-gelf",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "TJS Gulp helper.",
   "author": "Matthew Lawrence-Stubley <matt@tjs.co.uk>",
   "main": "src/index.js",
@@ -18,10 +18,13 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "debounce": "^1.0.0",
     "extend": "^2.0.1",
     "glob": "^5.0.6",
     "gulp-watch": "^4.2.4",
-    "minimist": "^1.1.1"
+    "minimist": "^1.1.1",
+    "prettyjson": "^1.1.3",
+    "user-home": "^2.0.0"
   },
   "devDependencies": {
     "gulp": "^3.8.11"

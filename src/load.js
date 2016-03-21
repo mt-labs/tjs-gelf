@@ -1,154 +1,112 @@
 'use strict';
 
-// Include dependencies
-var lib = {
-	glob: require('glob'),
-	path: require('path'),
-};
-
-
-// Constants
-// ---------------------------------------------------------
-
-var DELIMITER = ':';
-
-
-// Private API
-// ---------------------------------------------------------
-
 /**
- * Transform a task name.
+ * Get a load module bound to the given Gelf instance.
  */
-function transformTaskName(name) {
+function bind(gelf) {
 
-	var makeDashed = function(match) {
-		return '-' + match.toLowerCase();
+	// Dependencies
+	var lib = {
+		glob: require('glob'),
+		path: require('path'),
 	};
 
-	return name
-		.replace('_', DELIMITER)
-		.replace(/[A-Z]/g, makeDashed)
-	;
 
-}
+	/**
+	 * Load a task module.
+	 */
+	function loadModule(module, name, config) {
 
-
-/**
- * Try to infer a module name from a hash of tasks.
- */
-function inferModuleName(tasks) {
-
-	var modName = null;
-	var error = false;
-
-	for (var taskName in tasks) {
-
-		var subName = taskName.split(DELIMITER).pop();
-
-		if (modName != null && subName !== modName) {
-			error = true;
-			break;
+		if (typeof module !== 'function') {
+			var t = typeof module;
+			throw new Error('Expected task module to be a function, ' + t + ' given');
 		}
 
-		modName = subName;
+		name = module(gelf, name);
 
-	}
-
-	if (modName == null || error) {
-		throw new Error('Could not infer task name from loaded module');
-	}
-
-	return modName;
-
-}
-
-
-/**
- * Get a function to configure and run a task.
- */
-function getTaskRunner(gelf, task, name) {
-
-	if (task.length >= 3) {
-		return function(done) {
-			return task(gelf, gelf.config(name), done);
-		};
-	}
-
-	return function() {
-		return task(gelf, gelf.config(name));
-	};
-
-}
-
-
-/**
- * Get a hash of tasks from a task module.
- */
-function getModuleTasks(mod) {
-
-	var out = {};
-
-	var tasks = mod.getTasks();
-	for (var taskName in tasks) {
-		out[transformTaskName(taskName)] = tasks[taskName];
-	}
-
-	return out;
-
-}
-
-
-/**
- * Load a task module.
- */
-function loadTaskModule(gelf, mod) {
-
-	var tasks = getModuleTasks(mod);
-
-	var modName = mod.name || inferModuleName(tasks);
-
-	if (typeof mod.getConfig === 'function') {
-		gelf.config(modName, mod.getConfig);
-	}
-
-	for (var taskName in tasks) {
-		gelf.task(taskName, getTaskRunner(gelf, tasks[taskName], modName));
-	}
-
-}
-
-
-// Public API
-// ---------------------------------------------------------
-
-/**
- * Load Gelf tasks from a file, directory, or object.
- */
-module.exports = function load(target) {
-
-	var gelf = this;
-
-	// Load tasks from an array
-	if (Array.isArray(target)) {
-		return target.forEach(load.bind(gelf));
-	}
-
-	// Load tasks from a string
-	if (typeof target === 'string') {
-
-		// String is a glob pattern
-		if (lib.glob.hasMagic(target)) {
-			return lib.glob.sync(target).forEach(load.bind(gelf));
+		if (name == null) {
+			throw new Error('Loaded module did not return a name');
 		}
 
-		// String is a path
-		target = require(
-			lib.path.normalize(process.cwd() + '/' + target)
+		if (config != null) {
+			gelf.config(name, config);
+		}
+
+	}
+
+
+	/**
+	 * Load a task module from a path.
+	 */
+	function loadModuleFromPath(path, name, config) {
+
+		var module = require(
+			lib.path.normalize(process.cwd() + '/' + path)
 		);
 
+		loadModule(module, name, config);
+
 	}
 
-	// Load tasks from an object
-	loadTaskModule(gelf, target);
 
+	/**
+	 * Load task modules from a glob pattern.
+	 */
+	function loadModulesFromPattern(pattern) {
+
+		lib.glob.sync(pattern).forEach(function(path) {
+			loadModuleFromPath(path);
+		});
+
+	}
+
+
+	/**
+	 * Load tasks.
+	 */
+	function load(module, name, config) {
+
+		// Handle name/config arguments
+		if (arguments.length === 2) {
+			if (typeof name === 'object' || typeof name === 'function') {
+				config = name;
+				name = null;
+			}
+		}
+
+		// Module is a string
+		if (typeof module === 'string') {
+
+			// String is a glob pattern
+			if (lib.glob.hasMagic(module)) {
+
+				if (arguments.length > 1) {
+					throw new Error('Can not specify task name/config when loading from a glob pattern');
+				}
+
+				return loadModulesFromPattern(module);
+
+			}
+
+			// String is a path
+			return loadModuleFromPath(module, name, config);
+
+		}
+
+		// Module is a function
+		loadModule(module, name, config);
+
+	}
+
+
+	// Public API
+	return load;
+
+}
+
+
+
+// Export public API
+module.exports = {
+	bind: bind,
 };
