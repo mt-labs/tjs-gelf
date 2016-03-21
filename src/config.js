@@ -1,112 +1,108 @@
 'use strict';
 
-// Include dependencies
-var lib = {
-	extend: require('extend'),
-};
-
-var argv = require('minimist')(process.argv.slice(2));
-
-
-// Private API
-// ---------------------------------------------------------
-
-
 /**
- * Get a named configuration hash.
+ * Get a config module bound to the given Gelf instance.
  */
-function getConfig(gelf, name) {
+function bind(gelf) {
 
-	var fn = gelf._configFn[name];
-
-	return lib.extend(true,
-		fn ? fn((name !== 'global') ? getConfig(gelf, 'global') : {}, argv) : {},
-		gelf._config[name] || {}
-	);
-
-}
+	var allConfig = {};
 
 
-/**
- * Get all configuration hashes.
- */
-function getAllConfig(gelf) {
+	/**
+	 * Get configuration for a named module.
+	 */
+	function getConfig(name) {
 
-	var out = {};
+		var extend = require('extend');
 
-	[gelf._config, gelf._configFn].forEach(function(config) {
+		var configurators = (allConfig[name] || []).concat([
+			require('./config/from-system')(name),
+			require('./config/from-args')(name),
+		]);
 
-		for (var name in config) {
-			if (out[name] == null) {
-				out[name] = getConfig(gelf, name);
+		return configurators.reduce(function(config, current) {
+
+			if (current == null) {
+				return config;
 			}
+
+			if (typeof current === 'function') {
+				let result = current.call(null, config, getConfig);
+				return (result != null) ? result : config;
+			}
+
+			if (typeof current === 'object') {
+				return (typeof config === 'object') ? extend(true, config, current) : current;
+			}
+
+			return current;
+
+		}, null);
+
+	}
+
+
+	/**
+	 * Get configuration for all modules.
+	 */
+	function getAll() {
+
+		var out = {};
+
+		Object.keys(allConfig).map(function(name) {
+			out[name] = getConfig(name);
+		});
+
+		return out;
+
+	}
+
+
+	/**
+	 * Set configuration for a named module.
+	 */
+	function setConfig(name, config) {
+
+		if (allConfig[name] == null) {
+			allConfig[name] = [];
 		}
 
-	});
+		allConfig[name].push(config);
 
-	return out;
-
-}
-
-
-/**
- * Set the configuration provider for a named module.
- */
-function setConfigFunction(gelf, name, fn) {
-
-	gelf._configFn[name] = fn;
-
-}
-
-
-/**
- * Set configuration for a named module.
- */
-function setConfig(gelf, name, config, reset) {
-
-	gelf._config[name] = (reset || typeof config !== 'object') ?
-		config :
-		lib.extend(true, gelf._config[name] || {}, config || {});
-
-}
-
-
-// Public API
-// ---------------------------------------------------------
-
-/**
- * Get or set configuration.
- */
-module.exports = function(name, config, reset) {
-
-	var gelf = this;
-
-	// Prepare Gelf instance
-	if (gelf._config == null) {
-		gelf._config = {};
-		gelf._configFn = {};
 	}
 
-	// Signature: config()
-	//   Get all config
-	if (arguments.length === 0) {
-		return getAllConfig(gelf);
-	}
 
-	// Signature: config(name)
-	//   Get config for the named module
-	if (arguments.length === 1) {
-		return getConfig(gelf, name);
-	}
+	/**
+	 * Get configuration.
+	 */
+	function get(name, config) {
 
-	// Signature: config(name, fn)
-	//   Set the configuration function for a named module
-	if (typeof config === 'function') {
-		setConfigFunction(gelf, name, config);
-	}
+		// Signature: config()
+		//   Get all config
+		if (arguments.length === 0) {
+			return getAll();
+		}
 
-	// Signature: config(name, hash, reset)
-	//   Set configuration data for a named module
-	setConfig(gelf, name, config, reset);
+		// Signature: config(name)
+		//   Get config for the named module
+		if (arguments.length === 1) {
+			return getConfig(name);
+		}
 
+		// Signature: config(name, config)
+		//   Set configuration data for a named module
+		setConfig(name, config);
+
+	};
+
+
+	// Public API
+	return get;
+
+};
+
+
+// Export public API
+module.exports = {
+	bind: bind,
 };
