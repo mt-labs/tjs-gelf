@@ -56,10 +56,12 @@ function Gelf(gulp) {
 	// Bind load method
 	this.load = require('./load').bind(this);
 
+	// Bind src method
+	this.src = require('./src').bind(this);
+
 	// Bind Gulp methods
 	this.dest = gulp.dest.bind(gulp);
 	this.on = gulp.on.bind(gulp);
-	this.src = gulp.src.bind(gulp);
 	this.start = gulp.start.bind(gulp);
 
 	// Add default config

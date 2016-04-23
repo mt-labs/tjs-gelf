@@ -9,6 +9,7 @@ const DELIMITER = ':';
  */
 function bind(gelf) {
 
+	// Gulp instance
 	var gulp = gelf.gulp;
 
 	// Object for storing the dependencies of each batch task
