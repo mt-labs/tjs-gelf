@@ -19,6 +19,13 @@ function configureDefaults(gelf) {
 		};
 	});
 
+	gelf.config('notify', function(config, get) {
+		return {
+			sound:  false,
+			wait:   false,
+		};
+	});
+
 }
 
 
@@ -58,6 +65,9 @@ function Gelf(gulp) {
 
 	// Bind src method
 	this.src = require('./src').bind(this);
+
+	// Bind notify method
+	this.notify = require('./notify').bind(this);
 
 	// Bind Gulp methods
 	this.dest = gulp.dest.bind(gulp);

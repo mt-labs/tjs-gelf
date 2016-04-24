@@ -20,6 +20,7 @@ function bind(gelf) {
 	function onError(error) {
 
 		console.error('' + error);
+		gelf.notify.error(error);
 
 		this.emit('end');
 
