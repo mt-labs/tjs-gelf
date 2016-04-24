@@ -11,13 +11,14 @@ function bind(gelf) {
 	/**
 	 * Get configuration for a named module.
 	 */
-	function getConfig(name) {
+	function getConfig(name, merge) {
 
 		var extend = require('extend');
 
 		var configurators = (allConfig[name] || []).concat([
 			require('./config/from-system')(name),
 			require('./config/from-args')(name),
+			merge,
 		]);
 
 		return configurators.reduce(function(config, current) {
