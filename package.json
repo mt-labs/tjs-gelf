@@ -1,6 +1,6 @@
 {
   "name": "tjs-gelf",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "TJS Gulp helper.",
   "author": "Matthew Lawrence-Stubley <matt@tjs.co.uk>",
   "main": "src/index.js",
