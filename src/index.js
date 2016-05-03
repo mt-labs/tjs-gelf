@@ -21,8 +21,9 @@ function configureDefaults(gelf) {
 
 	gelf.config('notify', function(config, get) {
 		return {
-			sound:  false,
-			wait:   false,
+			groupDone:   200,
+			sound:       false,
+			wait:        false,
 		};
 	});
 

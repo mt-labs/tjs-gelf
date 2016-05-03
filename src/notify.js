@@ -7,12 +7,19 @@ function bind(gelf) {
 
 	// Dependencies
 	const lib = {
+		debounce: require('debounce'),
 		extend: require('extend'),
 		log: require('fancy-log'),
 		notifier: require('node-notifier'),
 		path: require('path'),
 		through: require('through2'),
 	};
+
+	// Buffer of unsent task-done notifications
+	let doneTasksBuffer = [];
+
+	// Debounced task-done call
+	let doneTasksFn = null;
 
 
 	/**
@@ -50,22 +57,22 @@ function bind(gelf) {
 
 
 	/**
-	 * Send a streaming notification.
+	 * Execute a function in a streaming pipe.
 	 */
-	function pipeNotify(type, title, message) {
+	function pipeExec(fn) {
 
-		let canNotify = true;
+		let canExec = true;
 
 		function transform(chunk, enc, cb) {
-			if (canNotify) {
-				notify(type, title, message);
-				canNotify = false;
+			if (canExec) {
+				fn();
+				canExec = false;
 			}
 			cb(null, chunk);
 		}
 
 		function flush(cb) {
-			canNotify = false;
+			canExec = false;
 			cb();
 		}
 
@@ -84,7 +91,30 @@ function bind(gelf) {
 			title = 'Task says…';
 		}
 
-		return pipeNotify('log', title, message);
+		return pipeExec(function() {
+			notify('log', title, message);
+		});
+
+	}
+
+
+	/**
+	 * Send buffered task-done notifications.
+	 */
+	function doneTasks() {
+
+		if (doneTasksBuffer.length === 0) {
+			return;
+		}
+
+		let title = (doneTasksBuffer.length === 1) ?
+			'Task finished' :
+			doneTasksBuffer.length + ' tasks finished'
+
+		notify('done', title, doneTasksBuffer.join(', '));
+
+		doneTasksBuffer = [];
+		doneTasksFn = null;
 
 	}
 
@@ -94,7 +124,19 @@ function bind(gelf) {
 	 */
 	function done(task) {
 
-		return pipeNotify('done', 'Task finished', task);
+		return pipeExec(function() {
+
+			if (!doneTasksFn) {
+				let delay = gelf.config('notify').groupDone;
+				doneTasksFn = (delay !== false) ?
+					lib.debounce(doneTasks, (delay !== true) ? +delay : 200) :
+					doneTasks;
+			}
+
+			doneTasksBuffer.push(task);
+			doneTasksFn();
+
+		});
 
 	}
 
